@@ -2,6 +2,6 @@
 _extends: .github
 repository:
   name: aws-tgw-hub
-  description: This component is responsible for provisioning an [AWS Transit Gateway](https://aws
+  description: This component is responsible for provisioning an AWS Transit Gateway hub that acts as a centralized gateway for connecting VPCs from other spoke accounts
   homepage: https://cloudposse.com/accelerate
   topics: terraform, terraform-component
