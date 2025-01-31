@@ -155,7 +155,7 @@ graph TD
         ATT1[TGW Attachment]
     end
 
-    subgraph core-usw2-network
+    subgraph core-use1-auto
         VPC2[VPC]
         VPC2_RT[VPC Route Tables]
         ATT2[TGW Attachment]
