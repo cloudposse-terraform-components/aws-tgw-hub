@@ -172,6 +172,13 @@ usage: |-
           # Route table associations are required so that route tables can propagate their routes to other route tables.
           # Set the following to true in the same account where the Transit Gateway and its route tables are deployed
           create_transit_gateway_route_table_association: true
+
+          # Associate connected accounts with the Transit Gateway route table
+          additional_associations:
+            - attachment_id: !terraform.output tgw/attachment core-use1-auto transit_gateway_vpc_attachment_id
+              route_table_id: !terraform.output tgw/hub transit_gateway_route_table_id
+            - attachment_id: !terraform.output tgw/attachment plat-use1-dev transit_gateway_vpc_attachment_id
+              route_table_id: !terraform.output tgw/hub transit_gateway_route_table_id
   ```
 
   #### 3. Configure VPC Routes
