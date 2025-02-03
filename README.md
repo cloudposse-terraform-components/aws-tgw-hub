@@ -174,7 +174,10 @@ graph TD
 
 #### 1. Deploy Transit Gateway Hub
 
-First, create the Transit Gateway in the network account:
+First, create the Transit Gateway in the network account.
+
+> [!TIP]
+> Leave `var.connections` empty. With this refactor, the `tgw/hub` component is only responsible for creating the Transit Gateway and its route tables. We do not need to fetch and store outputs for the connected components anymore.
 
 ```yaml
 components:
