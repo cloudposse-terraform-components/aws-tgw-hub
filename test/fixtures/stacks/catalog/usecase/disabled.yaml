@@ -1,10 +1,10 @@
 components:
   terraform:
-    tgw-hub/basic:
+    tgw-hub/disabled:
       metadata:
         component: target
       vars:
-        enabled: true
+        enabled: false
         expose_eks_sg: false
         account_map_tenant_name: core
         account_map_stage_name: root
