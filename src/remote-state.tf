@@ -21,7 +21,7 @@ locals {
 
 module "account_map" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "1.5.0"
+  version = "1.8.0"
 
   component   = "account-map"
   environment = var.account_map_environment_name
@@ -37,7 +37,7 @@ module "vpc" {
   => c }
 
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "1.5.0"
+  version = "1.8.0"
 
   component   = each.value.component
   stage       = each.value.stage
@@ -59,7 +59,7 @@ module "eks" {
   => c }
 
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "1.5.0"
+  version = "1.8.0"
 
   component   = each.value.component
   stage       = each.value.stage

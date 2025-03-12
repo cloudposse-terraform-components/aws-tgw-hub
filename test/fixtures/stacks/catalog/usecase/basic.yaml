@@ -1,0 +1,19 @@
+components:
+  terraform:
+    tgw-hub/basic:
+      metadata:
+        component: tgw/hub
+      vars:
+        enabled: true
+        expose_eks_sg: false
+        account_map_tenant_name: core
+        account_map_stage_name: root
+        tags:
+          Team: sre
+          Service: tgw-hub
+        connections:
+          - account:
+              tenant: default
+              stage: test
+            vpc_component_names:
+              - vpc
