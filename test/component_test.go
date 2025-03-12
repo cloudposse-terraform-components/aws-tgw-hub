@@ -85,7 +85,7 @@ func (s *ComponentSuite) TestBasic() {
 	assert.NotNil(s.T(), options)
 
 	transitGatewayArn := atmos.Output(s.T(), options, "transit_gateway_arn")
-	assert.Empty(s.T(), transitGatewayArn)
+	assert.NotEmpty(s.T(), transitGatewayArn)
 
 	transitGatewayId := atmos.Output(s.T(), options, "transit_gateway_id")
 	assert.NotEmpty(s.T(), transitGatewayId)
@@ -148,6 +148,12 @@ func (s *ComponentSuite) TestBasic() {
 	assert.False(s.T(), *routeTable.DefaultAssociationRouteTable)
 	assert.False(s.T(), *routeTable.DefaultPropagationRouteTable)
 }
+
+func (s *ComponentSuite) SetupSuite() {
+	s.TestSuite.InitConfig()
+	s.TestSuite.Config.ComponentDestDir = "components/terraform/tgw/hub"
+	s.TestSuite.SetupSuite()
+  }
 
 func TestRunSuite(t *testing.T) {
 	suite := new(ComponentSuite)

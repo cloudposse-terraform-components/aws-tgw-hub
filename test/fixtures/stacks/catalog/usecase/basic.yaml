@@ -2,7 +2,7 @@ components:
   terraform:
     tgw-hub/basic:
       metadata:
-        component: target
+        component: tgw/hub
       vars:
         enabled: true
         expose_eks_sg: false
