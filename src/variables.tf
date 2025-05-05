@@ -49,6 +49,12 @@ variable "account_map_tenant_name" {
   default     = null
 }
 
+variable "ram_resource_share_enabled" {
+  type = bool
+  description = "Enable Resource Access Managment Share"
+  default = true
+}
+
 variable "ram_principals" {
   type        = list(string)
   description = "A list of AWS account IDs to share the TGW with outside the organization"
