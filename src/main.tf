@@ -8,7 +8,7 @@
 
 module "tgw_hub" {
   source  = "cloudposse/transit-gateway/aws"
-  version = "0.11.0"
+  version = "0.11.3"
 
   ram_resource_share_enabled = var.ram_resource_share_enabled
   ram_principals             = var.ram_principals
