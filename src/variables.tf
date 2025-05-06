@@ -50,9 +50,9 @@ variable "account_map_tenant_name" {
 }
 
 variable "ram_resource_share_enabled" {
-  type = bool
+  type        = bool
   description = "Enable Resource Access Managment Share"
-  default = true
+  default     = true
 }
 
 variable "ram_principals" {
