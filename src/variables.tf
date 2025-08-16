@@ -66,3 +66,9 @@ variable "allow_external_principals" {
   description = "Set true to allow the TGW to be RAM shared with external principals specified in ram_principals"
   default     = false
 }
+
+variable "account_map_component_name" {
+  type        = string
+  description = "The name of the account-map component"
+  default     = "account-map"
+}
