@@ -250,8 +250,13 @@ usage: |-
             - attachment_id: !terraform.output tgw/attachment core-use1-network transit_gateway_attachment_id
             # Route to any connected account
             - attachment_id: !terraform.output tgw/attachment core-use1-auto transit_gateway_attachment_id
-            - attachment_id: !terraform.output tgw/attachment plat-use1-dev transit_gateway_attachment_id
+          - attachment_id: !terraform.output tgw/attachment plat-use1-dev transit_gateway_attachment_id
   ```
+
+references:
+  - name: AWS Transit Gateway
+    description: Official AWS Transit Gateway service overview and documentation.
+    url: https://aws.amazon.com/transit-gateway
 
 tags:
   - component/tgw/hub
