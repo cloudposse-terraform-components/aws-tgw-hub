@@ -253,6 +253,11 @@ usage: |-
             - attachment_id: !terraform.output tgw/attachment plat-use1-dev transit_gateway_attachment_id
   ```
 
+references:
+  - name: AWS Transit Gateway
+    url: https://aws.amazon.com/transit-gateway
+    description: Overview of AWS Transit Gateway service and features.
+
 tags:
   - component/tgw/hub
   - layer/network
