@@ -9,10 +9,11 @@ tags:
 
 This component is responsible for provisioning an [AWS Transit Gateway](https://aws.amazon.com/transit-gateway) `hub`
 that acts as a centralized gateway for connecting VPCs from other `spoke` accounts.
-
 ## Usage
 
 **Stack Level**: Regional
+
+## Basic Usage with `tgw/spoke`
 
 Here's an example snippet for how to configure and use this component:
 
@@ -84,8 +85,179 @@ atmos terraform plan tgw/hub -s <tenant>-<environment>-network
 atmos terraform apply tgw/hub -s <tenant>-<environment>-network
 ```
 
-<!-- prettier-ignore-start -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+## Alternate Usage with `tgw/attachment`, `tgw/routes`, and `vpc/routes`
+
+### Components Overview
+
+- **`tgw/hub`**: Creates the Transit Gateway in the network account
+- **`tgw/attachment`**: Creates and manages Transit Gateway VPC attachments in connected accounts
+- **`tgw/hub-connection`**: Creates the Transit Gateway peering connection between two `tgw/hub` deployments
+- **`tgw/routes`**: Manages Transit Gateway route tables in the network account
+- **`vpc-routes`** (`vpc/routes/private`): Configures VPC route tables in connected accounts to route traffic through the Transit Gateway (Note: This component lives outside the `tgw/` directory since it's not specific to Transit Gateway)
+
+### Architecture
+
+The Transit Gateway components work together in the following way:
+
+1. Transit Gateway is created in the network account (`tgw/hub`)
+2. VPCs in other accounts attach to the Transit Gateway (`tgw/attachment`)
+3. Route tables in connected VPCs direct traffic across accounts (`vpc-routes`)
+4. Transit Gateway route tables control routing between attachments (`tgw/routes`)
+
+```mermaid
+graph TD
+    subgraph core-use1-network
+        TGW[Transit Gateway]
+        TGW_RT[TGW Route Tables]
+    end
+
+    subgraph plat-use1-dev
+        VPC1[VPC]
+        VPC1_RT[VPC Route Tables]
+        ATT1[TGW Attachment]
+    end
+
+    subgraph core-use1-auto
+        VPC2[VPC]
+        VPC2_RT[VPC Route Tables]
+        ATT2[TGW Attachment]
+    end
+
+    ATT1 <--> TGW
+    ATT2 <--> TGW
+    TGW <--> TGW_RT
+    VPC1_RT <--> VPC1
+    VPC2_RT <--> VPC2
+    VPC1 <--> ATT1
+    VPC2 <--> ATT2
+```
+
+### Deployment Steps
+
+#### 1. Deploy Transit Gateway Hub
+
+First, create the Transit Gateway in the network account.
+
+> [!TIP]
+> Leave `var.connections` empty. With this refactor, the `tgw/hub` component is only responsible for creating the Transit Gateway and its route tables. We do not need to fetch and store outputs for the connected components anymore.
+
+```yaml
+components:
+  terraform:
+    tgw/hub:
+      vars:
+        connections: []
+```
+
+#### 2. Deploy VPC Attachments
+
+Important: Deploy attachments in connected accounts first, before deploying attachments in the network account.
+
+##### Connected Account Attachments
+
+```yaml
+components:
+  terraform:
+    tgw/attachment:
+      vars:
+        transit_gateway_id: !terraform.output tgw/hub core-use1-network transit_gateway_id
+        transit_gateway_route_table_id: !terraform.output tgw/hub core-use1-network transit_gateway_route_table_id
+        create_transit_gateway_route_table_association: false
+```
+
+##### Network Account Attachment
+
+```yaml
+components:
+  terraform:
+    tgw/attachment:
+      vars:
+        transit_gateway_id: !terraform.output tgw/hub core-use1-network transit_gateway_id
+        transit_gateway_route_table_id: !terraform.output tgw/hub core-use1-network transit_gateway_route_table_id
+
+        # Route table associations are required so that route tables can propagate their routes to other route tables.
+        # Set the following to true in the same account where the Transit Gateway and its route tables are deployed
+        create_transit_gateway_route_table_association: true
+
+        # Associate connected accounts with the Transit Gateway route table
+        additional_associations:
+          - attachment_id: !terraform.output tgw/attachment core-use1-auto transit_gateway_vpc_attachment_id
+            route_table_id: !terraform.output tgw/hub transit_gateway_route_table_id
+          - attachment_id: !terraform.output tgw/attachment plat-use1-dev transit_gateway_vpc_attachment_id
+            route_table_id: !terraform.output tgw/hub transit_gateway_route_table_id
+```
+
+#### 3. Configure VPC Routes
+
+Configure routes in all connected VPCs.
+
+```yaml
+components:
+  terraform:
+    vpc/routes/private:
+      metadata:
+        component: vpc-routes
+      vars:
+        route_table_ids: !terraform.output vpc private_route_table_ids
+        routes:
+          # Route to network account
+          - destination:
+              cidr_block: !terraform.output vpc core-use1-network vpc_cidr
+            target:
+              type: transit_gateway_id
+              value: !terraform.output tgw/hub core-use1-network transit_gateway_id
+
+          # Route to core-auto account, if necessary
+          - destination:
+              cidr_block: !terraform.output vpc core-use1-auto vpc_cidr
+            target:
+              type: transit_gateway_id
+              value: !terraform.output tgw/hub core-use1-network transit_gateway_id
+```
+
+Configure routes in the Network Account VPCs.
+
+```yaml
+components:
+  terraform:
+    vpc/routes/private:
+      vars:
+        route_table_ids: !terraform.output vpc private_route_table_ids
+        routes:
+          # Routes to connected accounts
+          - destination:
+              cidr_block: !terraform.output vpc core-use1-auto vpc_cidr
+            target:
+              type: transit_gateway_id
+              value: !terraform.output tgw/hub transit_gateway_id
+          - destination:
+              cidr_block: !terraform.output vpc plat-use1-dev vpc_cidr
+            target:
+              type: transit_gateway_id
+              value: !terraform.output tgw/hub transit_gateway_id
+```
+
+### 4. Deploy Transit Gateway Route Table Routes
+
+Deploy the `tgw/routes` component in the network account to create route tables and routes.
+
+```yaml
+components:
+  terraform:
+    tgw/routes:
+      vars:
+        transit_gateway_route_table_id: !terraform.output tgw/hub transit_gateway_route_table_id
+        # Use propagated routes to route through VPC attachments
+        propagated_routes:
+          # Route to this account
+          - attachment_id: !terraform.output tgw/attachment core-use1-network transit_gateway_attachment_id
+          # Route to any connected account
+          - attachment_id: !terraform.output tgw/attachment core-use1-auto transit_gateway_attachment_id
+          - attachment_id: !terraform.output tgw/attachment plat-use1-dev transit_gateway_attachment_id
+```
+
+
+<!-- markdownlint-disable -->
 ## Requirements
 
 | Name | Version |
@@ -155,12 +327,17 @@ No resources.
 | <a name="output_transit_gateway_id"></a> [transit\_gateway\_id](#output\_transit\_gateway\_id) | Transit Gateway ID |
 | <a name="output_transit_gateway_route_table_id"></a> [transit\_gateway\_route\_table\_id](#output\_transit\_gateway\_route\_table\_id) | Transit Gateway route table ID |
 | <a name="output_vpcs"></a> [vpcs](#output\_vpcs) | Accounts with VPC and VPCs information |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-<!-- prettier-ignore-end -->
+<!-- markdownlint-restore -->
+
+
 
 ## References
 
-- [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/main/modules/tgw/hub) -
-  Cloud Posse's upstream component
+
+- [AWS Transit Gateway](https://aws.amazon.com/transit-gateway) - Overview of AWS Transit Gateway service and features.
+
+
+
 
 [<img src="https://cloudposse.com/logo-300x69.svg" height="32" align="right"/>](https://cpco.io/homepage?utm_source=github&utm_medium=readme&utm_campaign=cloudposse-terraform-components/aws-tgw-hub&utm_content=)
+
