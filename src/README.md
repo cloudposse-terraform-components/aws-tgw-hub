@@ -276,7 +276,7 @@ No providers.
 | <a name="module_account_map"></a> [account\_map](#module\_account\_map) | cloudposse/stack-config/yaml//modules/remote-state | 1.8.0 |
 | <a name="module_eks"></a> [eks](#module\_eks) | cloudposse/stack-config/yaml//modules/remote-state | 1.8.0 |
 | <a name="module_iam_roles"></a> [iam\_roles](#module\_iam\_roles) | ../../account-map/modules/iam-roles | n/a |
-| <a name="module_tgw_hub"></a> [tgw\_hub](#module\_tgw\_hub) | cloudposse/transit-gateway/aws | 0.12.0 |
+| <a name="module_tgw_hub"></a> [tgw\_hub](#module\_tgw\_hub) | cloudposse/transit-gateway/aws | 0.13.0 |
 | <a name="module_this"></a> [this](#module\_this) | cloudposse/label/null | 0.25.0 |
 | <a name="module_vpc"></a> [vpc](#module\_vpc) | cloudposse/stack-config/yaml//modules/remote-state | 1.8.0 |
 
