@@ -72,3 +72,15 @@ variable "account_map_component_name" {
   description = "The name of the account-map component"
   default     = "account-map"
 }
+
+variable "account_map_enabled" {
+  type        = bool
+  description = "Set to true to use the account-map component for account lookups. Set to false to use the static account_map variable."
+  default     = true
+}
+
+variable "account_map" {
+  type        = any
+  description = "Account map to use when account_map_enabled is false. Expected to contain at least 'full_account_map' with account name to ID mappings."
+  default     = {}
+}
