@@ -72,3 +72,16 @@ variable "account_map_component_name" {
   description = "The name of the account-map component"
   default     = "account-map"
 }
+
+variable "amazon_side_asn" {
+  type        = number
+  default     = 64512
+  description = <<-EOT
+    Private Autonomous System Number (ASN) for the Amazon side of a BGP session.
+    The range is `64512` to `65534` for 16-bit ASNs and `4200000000` to `4294967294` for 32-bit ASNs.
+
+    Distinct ASNs are required across hubs when peering Transit Gateways, associating with
+    a Direct Connect Gateway, or running BGP Site-to-Site VPN against the same on-premises router.
+    Changing this value forces replacement of the Transit Gateway.
+  EOT
+}
