@@ -85,3 +85,47 @@ variable "amazon_side_asn" {
     Changing this value forces replacement of the Transit Gateway.
   EOT
 }
+
+variable "auto_accept_shared_attachments" {
+  type        = string
+  default     = "enable"
+  description = <<-EOT
+    Whether VPC attachment requests from accounts the Transit Gateway is shared with are automatically accepted.
+    Valid values: `enable`, `disable`.
+  EOT
+
+  validation {
+    condition     = contains(["enable", "disable"], var.auto_accept_shared_attachments)
+    error_message = "auto_accept_shared_attachments must be either \"enable\" or \"disable\"."
+  }
+}
+
+variable "default_route_table_association" {
+  type        = string
+  default     = "disable"
+  description = <<-EOT
+    Whether new attachments are automatically associated with the Transit Gateway default route table.
+    Keep `disable` to require explicit route table associations, for example to keep separate environments isolated.
+    Valid values: `enable`, `disable`.
+  EOT
+
+  validation {
+    condition     = contains(["enable", "disable"], var.default_route_table_association)
+    error_message = "default_route_table_association must be either \"enable\" or \"disable\"."
+  }
+}
+
+variable "default_route_table_propagation" {
+  type        = string
+  default     = "disable"
+  description = <<-EOT
+    Whether new attachments automatically propagate their routes to the Transit Gateway default route table.
+    Keep `disable` to require explicit route propagation, for example to keep separate environments isolated.
+    Valid values: `enable`, `disable`.
+  EOT
+
+  validation {
+    condition     = contains(["enable", "disable"], var.default_route_table_propagation)
+    error_message = "default_route_table_propagation must be either \"enable\" or \"disable\"."
+  }
+}
